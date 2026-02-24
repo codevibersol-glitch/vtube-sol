@@ -1,0 +1,386 @@
+@import "tailwindcss";
+
+/* ─── Base ───────────────────────────────────────────────────────────────── */
+body {
+  background: #0d0d1a;
+  min-height: 100vh;
+  margin: 0;
+  overflow: hidden;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* ─── Hidden video source ────────────────────────────────────────────────── */
+#video {
+  display: none;
+}
+
+/* ─── Full-screen rendering canvas ──────────────────────────────────────── */
+#canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+/* ─── UI overlay (sits above canvas) ────────────────────────────────────── */
+#ui {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;   /* clicks pass through to canvas by default */
+  z-index: 100;
+}
+
+/* ─── Header bar ─────────────────────────────────────────────────────────── */
+#header {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(5, 5, 20, 0.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  padding: 8px 22px;
+  border-radius: 28px;
+  border: 1px solid rgba(0, 255, 136, 0.2);
+  pointer-events: auto;
+  white-space: nowrap;
+}
+
+.app-title {
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.4px;
+  color: #00ff88;
+}
+
+/* ─── Status indicator ───────────────────────────────────────────────────── */
+#status {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+#status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffaa00;
+  flex-shrink: 0;
+  animation: blink 1.6s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.2; }
+}
+
+#status-text {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* ─── Mode buttons ───────────────────────────────────────────────────────── */
+#controls {
+  position: absolute;
+  bottom: 42px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  pointer-events: auto;
+}
+
+.btn-mode {
+  background: rgba(5, 5, 20, 0.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 10px 22px;
+  border-radius: 28px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: border-color 0.22s, color 0.22s, transform 0.18s, box-shadow 0.22s;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.btn-mode:hover {
+  border-color: rgba(0, 255, 136, 0.45);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45);
+}
+
+.btn-mode.active {
+  background: rgba(0, 255, 136, 0.12);
+  border-color: #00ff88;
+  color: #00ff88;
+  box-shadow: 0 0 22px rgba(0, 255, 136, 0.28);
+}
+
+/* ─── Keyboard shortcuts hint ────────────────────────────────────────────── */
+#shortcuts {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.28);
+  font-size: 11px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+kbd {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-family: monospace;
+  font-size: 10px;
+}
+
+/* ─── Fullscreen canvas utility ──────────────────────────────────────────── */
+.canvas-fullscreen {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  border-radius: 0 !important;
+  z-index: 9999 !important;
+}
+
+/* ─── 3D avatar style picker toolbar ─────────────────────────────────────── */
+#avatar3d-toolbar {
+  position: absolute;
+  top: 68px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  pointer-events: auto;
+  background: rgba(5, 5, 20, 0.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(0, 170, 255, 0.22);
+  border-radius: 24px;
+  padding: 6px 10px;
+}
+
+.btn-3d-style {
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.55);
+  padding: 5px 14px;
+  border-radius: 18px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  transition: border-color 0.2s, color 0.2s, background 0.2s;
+  white-space: nowrap;
+}
+
+.btn-3d-style:hover {
+  border-color: rgba(0, 200, 255, 0.5);
+  color: #fff;
+}
+
+.btn-3d-style.active {
+  background: rgba(0, 170, 255, 0.18);
+  border-color: rgba(0, 200, 255, 0.65);
+  color: #00e5ff;
+}
+
+/* ─── VRM toolbar (load-file button row) ─────────────────────────────────── */
+#vrm-toolbar {
+  position: absolute;
+  top: 68px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  pointer-events: auto;
+}
+
+#vrm-upload {
+  display: none;
+}
+
+.btn-vrm-load {
+  cursor: pointer;
+  background: rgba(5, 5, 20, 0.78);
+  backdrop-filter: blur(14px);
+  border: 2px solid rgba(0, 170, 255, 0.4);
+  color: rgba(0, 200, 255, 0.9);
+  padding: 8px 18px;
+  border-radius: 24px;
+  font-size: 13px;
+  font-weight: 500;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.18s;
+  white-space: nowrap;
+  user-select: none;
+}
+.btn-vrm-load:hover {
+  border-color: rgba(0, 200, 255, 0.7);
+  box-shadow: 0 0 18px rgba(0, 200, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+/* ─── VRM transform controls (rotation + scale) ──────────────────────────── */
+#vrm-controls {
+  position: absolute;
+  top: 112px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  pointer-events: auto;
+  background: rgba(5, 5, 20, 0.78);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(0, 170, 255, 0.25);
+  border-radius: 24px;
+  padding: 7px 18px;
+  white-space: nowrap;
+}
+
+.vrm-ctrl-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(0, 200, 255, 0.85);
+  letter-spacing: 0.3px;
+}
+
+.vrm-ctrl-val {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  min-width: 38px;
+  text-align: left;
+}
+
+.vrm-ctrl-sep {
+  width: 1px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 0 2px;
+  flex-shrink: 0;
+}
+
+.vrm-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 110px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(0, 170, 255, 0.25);
+  outline: none;
+  cursor: pointer;
+}
+
+.vrm-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #00c8ff;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(0, 200, 255, 0.55);
+}
+
+.vrm-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #00c8ff;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 8px rgba(0, 200, 255, 0.55);
+}
+
+.btn-vrm-reset {
+  cursor: pointer;
+  background: transparent;
+  border: 1px solid rgba(0, 170, 255, 0.35);
+  color: rgba(0, 200, 255, 0.75);
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.btn-vrm-reset:hover {
+  border-color: rgba(0, 200, 255, 0.7);
+  color: #fff;
+}
+
+/* ─── VRM drop zone (shown before any model is loaded) ───────────────────── */
+#vrm-drop {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+}
+
+.vrm-drop-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  background: rgba(5, 5, 20, 0.82);
+  backdrop-filter: blur(16px);
+  border: 2px dashed rgba(0, 200, 255, 0.35);
+  border-radius: 20px;
+  padding: 40px 56px;
+  text-align: center;
+}
+
+.vrm-icon {
+  font-size: 52px;
+  line-height: 1;
+}
+
+.vrm-drop-inner p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 15px;
+}
+
+.vrm-hint {
+  color: rgba(255, 255, 255, 0.35) !important;
+  font-size: 11px !important;
+}
+
+/* ─── Hidden utility ─────────────────────────────────────────────────────── */
+.hidden {
+  display: none !important;
+}
+
+/* ─── Neon glow helpers (kept for potential extension) ───────────────────── */
+.btn-glow {
+  transition: all 0.3s ease;
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+}
+.btn-glow:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 28px rgba(0, 255, 136, 0.5);
+}
+.btn-obs {
+  box-shadow: 0 0 20px rgba(255, 70, 70, 0.5);
+}
+.btn-obs:hover {
+  box-shadow: 0 0 35px rgba(255, 70, 70, 0.8);
+}

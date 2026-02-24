@@ -1,0 +1,20 @@
+## Render Blueprint — vtube-sol
+## Docs: https://render.com/docs/blueprint-spec
+##
+## Deploy: connect this repo in Render → "New Blueprint Instance"
+
+services:
+  - type: web
+    name: vtube-sol
+    env: static
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    pullRequestPreviewsEnabled: true
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: Permissions-Policy
+        value: camera=*, microphone=*

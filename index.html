@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1">
+  <title>VTuber Studio</title>
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+  <!-- Hidden video source for MediaPipe -->
+  <video id="video" autoplay playsinline muted></video>
+
+  <!-- 2D canvas: overlay / 2D avatar / 3D wireframe -->
+  <canvas id="canvas"></canvas>
+
+  <!-- 3D canvas: Three.js VRM renderer (hidden unless VRM mode) -->
+  <canvas id="vrm-canvas" class="hidden"></canvas>
+
+  <!-- UI overlay -->
+  <div id="ui">
+
+    <!-- Header -->
+    <div id="header">
+      <span class="app-title">VTuber Studio</span>
+      <div id="status">
+        <div id="status-dot"></div>
+        <span id="status-text">Starting…</span>
+      </div>
+    </div>
+
+    <!-- Mode buttons -->
+    <div id="controls">
+      <button id="btn-overlay" class="btn-mode active">📹 Camera</button>
+      <button id="btn-2d"      class="btn-mode">🎭 2D Avatar</button>
+      <button id="btn-3d"      class="btn-mode">🎲 3D Avatar</button>
+      <button id="btn-vrm"     class="btn-mode">🤖 VRM Avatar</button>
+    </div>
+
+    <!-- 3D avatar style picker (shown in 3D mode) -->
+    <div id="avatar3d-toolbar" class="hidden">
+      <button class="btn-3d-style active" data-style="neon">⚡ Neon</button>
+      <button class="btn-3d-style"        data-style="ghost">👻 Ghost</button>
+      <button class="btn-3d-style"        data-style="robot">🤖 Robot</button>
+      <button class="btn-3d-style"        data-style="matrix">💾 Matrix</button>
+    </div>
+
+    <!-- VRM file picker (only shown in VRM mode) -->
+    <div id="vrm-toolbar" class="hidden">
+      <label for="vrm-upload" class="btn-mode btn-vrm-load">📂 Load VRM File</label>
+      <input type="file" id="vrm-upload" accept=".vrm">
+    </div>
+
+    <!-- VRM transform controls (rotation + scale sliders) -->
+    <div id="vrm-controls" class="hidden">
+      <span class="vrm-ctrl-label">Rotate</span>
+      <input type="range" id="vrm-rotate" class="vrm-slider" min="0" max="360" value="180" step="1">
+      <span id="vrm-rotate-val" class="vrm-ctrl-val">180°</span>
+      <span class="vrm-ctrl-sep"></span>
+      <span class="vrm-ctrl-label">Scale</span>
+      <input type="range" id="vrm-scale" class="vrm-slider" min="50" max="200" value="100" step="1">
+      <span id="vrm-scale-val" class="vrm-ctrl-val">1.0×</span>
+      <span class="vrm-ctrl-sep"></span>
+      <button id="vrm-reset-btn" class="btn-vrm-reset">↺ Reset</button>
+    </div>
+
+    <!-- VRM drop zone (shown in VRM mode when no model is loaded) -->
+    <div id="vrm-drop" class="hidden">
+      <div class="vrm-drop-inner">
+        <div class="vrm-icon">🤖</div>
+        <p>No VRM model loaded</p>
+        <label for="vrm-upload" class="btn-mode">📂 Load VRM File</label>
+        <p class="vrm-hint">Supports VRM 0.x and VRM 1.0 · Any file-size</p>
+      </div>
+    </div>
+
+    <!-- Keyboard hints -->
+    <div id="shortcuts">
+      <kbd>V</kbd> Camera &nbsp;
+      <kbd>2</kbd> 2D &nbsp;
+      <kbd>3</kbd> 3D &nbsp;
+      <kbd>R</kbd> VRM &nbsp;
+      <kbd>F</kbd> Fullscreen
+    </div>
+
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
