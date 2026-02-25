@@ -26,14 +26,17 @@
         <div id="status-dot"></div>
         <span id="status-text">Starting…</span>
       </div>
+      <span id="fps-counter">-- fps</span>
     </div>
 
     <!-- Mode buttons -->
     <div id="controls">
-      <button id="btn-overlay" class="btn-mode active">📹 Camera</button>
-      <button id="btn-2d"      class="btn-mode">🎭 2D Avatar</button>
-      <button id="btn-3d"      class="btn-mode">🎲 3D Avatar</button>
-      <button id="btn-vrm"     class="btn-mode">🤖 VRM Avatar</button>
+      <button id="btn-overlay"    class="btn-mode active">📹 Camera</button>
+      <button id="btn-2d"         class="btn-mode">🎭 2D Avatar</button>
+      <button id="btn-3d"         class="btn-mode">🎲 3D Avatar</button>
+      <button id="btn-vrm"        class="btn-mode">🤖 VRM Avatar</button>
+      <button id="btn-mirror"     class="btn-mode">🪞 Mirror</button>
+      <button id="btn-screenshot" class="btn-mode btn-screenshot">📸 Snap</button>
     </div>
 
     <!-- 3D avatar style picker (shown in 3D mode) -->
@@ -42,6 +45,7 @@
       <button class="btn-3d-style"        data-style="ghost">👻 Ghost</button>
       <button class="btn-3d-style"        data-style="robot">🤖 Robot</button>
       <button class="btn-3d-style"        data-style="matrix">💾 Matrix</button>
+      <button class="btn-3d-style"        data-style="synthwave">🌆 Synthwave</button>
     </div>
 
     <!-- VRM file picker (only shown in VRM mode) -->
@@ -79,10 +83,15 @@
       <kbd>2</kbd> 2D &nbsp;
       <kbd>3</kbd> 3D &nbsp;
       <kbd>R</kbd> VRM &nbsp;
+      <kbd>M</kbd> Mirror &nbsp;
+      <kbd>S</kbd> Snap &nbsp;
       <kbd>F</kbd> Fullscreen
     </div>
 
   </div>
+
+  <!-- Screenshot flash overlay -->
+  <div id="screenshot-flash"></div>
 
   <script type="module" src="/src/main.js"></script>
 </body>

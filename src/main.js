@@ -37,6 +37,20 @@ function getVRMAvatar() {
 // ─── Mode management ──────────────────────────────────────────────────────────
 let mode          = 'overlay'
 let avatar3dStyle = 'neon'
+let mirrorMode    = false
+
+// ─── FPS tracking ─────────────────────────────────────────────────────────────
+let _fpsFrames = 0, _fpsLast = performance.now()
+function updateFPS() {
+  _fpsFrames++
+  const now = performance.now()
+  if (now - _fpsLast >= 1000) {
+    const fps = Math.round(_fpsFrames * 1000 / (now - _fpsLast))
+    document.getElementById('fps-counter').textContent = `${fps} fps`
+    _fpsFrames = 0
+    _fpsLast   = now
+  }
+}
 
 function setMode(m) {
   mode = m
@@ -77,6 +91,8 @@ document.addEventListener('keydown', e => {
   if (e.key === '2') setMode('2d')
   if (e.key === '3') setMode('3d')
   if (e.key === 'r' || e.key === 'R') setMode('vrm')
+  if (e.key === 'm' || e.key === 'M') toggleMirror()
+  if (e.key === 's' || e.key === 'S') takeScreenshot()
   if (e.key === 'f' || e.key === 'F') {
     if (!document.fullscreenElement) document.documentElement.requestFullscreen()
     else document.exitFullscreen()
@@ -127,6 +143,49 @@ document.getElementById('vrm-reset-btn').addEventListener('click', () => {
   av.setModelRotation(Math.PI)
   av.setModelScale(1)
 })
+
+// ─── Mirror mode ──────────────────────────────────────────────────────────────
+function toggleMirror() {
+  mirrorMode = !mirrorMode
+  const t = mirrorMode ? 'scaleX(-1)' : ''
+  canvas.style.transform    = t
+  vrmCanvas.style.transform = t
+  document.getElementById('btn-mirror').classList.toggle('active', mirrorMode)
+}
+
+document.getElementById('btn-mirror').addEventListener('click', toggleMirror)
+
+// ─── Screenshot ───────────────────────────────────────────────────────────────
+function takeScreenshot() {
+  // Flash feedback
+  const flash = document.getElementById('screenshot-flash')
+  const btn   = document.getElementById('btn-screenshot')
+  flash.classList.add('active')
+  btn.classList.add('flash-btn')
+  setTimeout(() => { flash.classList.remove('active'); btn.classList.remove('flash-btn') }, 80)
+
+  const srcCanvas = (mode === 'vrm') ? vrmCanvas : canvas
+
+  // When mirrored, composite a flipped copy so the file matches what you see
+  let outCanvas = srcCanvas
+  if (mirrorMode) {
+    outCanvas        = document.createElement('canvas')
+    outCanvas.width  = srcCanvas.width
+    outCanvas.height = srcCanvas.height
+    const oc = outCanvas.getContext('2d')
+    oc.translate(outCanvas.width, 0)
+    oc.scale(-1, 1)
+    oc.drawImage(srcCanvas, 0, 0)
+  }
+
+  const ts   = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-')
+  const link = document.createElement('a')
+  link.download = `vtube-${ts}.png`
+  link.href     = outCanvas.toDataURL('image/png')
+  link.click()
+}
+
+document.getElementById('btn-screenshot').addEventListener('click', takeScreenshot)
 
 // ─── Status ───────────────────────────────────────────────────────────────────
 function setStatus(text, color = '#00ff88') {
@@ -498,6 +557,42 @@ function _mtxTick(W, H) {
   }
 }
 
+function _synthwaveSky(W, H) {
+  const horizon = H * 0.55
+  // Sky gradient
+  const sky = ctx.createLinearGradient(0, 0, 0, horizon)
+  sky.addColorStop(0, '#0d0015')
+  sky.addColorStop(0.6, '#180025')
+  sky.addColorStop(1, '#2a0040')
+  ctx.fillStyle = sky; ctx.fillRect(0, 0, W, horizon)
+
+  // Retrowave sun
+  const sunCX = W / 2, sunCY = horizon * 0.62
+  const sunR  = Math.min(W, H) * 0.10
+  const g = ctx.createRadialGradient(sunCX, sunCY, 0, sunCX, sunCY, sunR)
+  g.addColorStop(0,    'rgba(255,230,120,1)')
+  g.addColorStop(0.35, 'rgba(255,80,190,0.95)')
+  g.addColorStop(0.72, 'rgba(180,0,255,0.65)')
+  g.addColorStop(1,    'rgba(90,0,180,0)')
+  ctx.beginPath(); ctx.arc(sunCX, sunCY, sunR, 0, Math.PI * 2)
+  ctx.fillStyle = g; ctx.fill()
+
+  // Horizontal stripe cutouts on the sun (classic synthwave look)
+  ctx.fillStyle = '#0d0015'
+  for (let s = 1; s <= 6; s++) {
+    const sy  = sunCY + sunR * (s / 7)
+    const hw  = Math.sqrt(Math.max(0, sunR * sunR - (sy - sunCY) ** 2))
+    ctx.fillRect(sunCX - hw, sy - 1.5, hw * 2, 3)
+  }
+
+  // Horizon glow
+  const hg = ctx.createLinearGradient(0, horizon - 22, 0, horizon + 22)
+  hg.addColorStop(0, 'transparent')
+  hg.addColorStop(0.5, 'rgba(255,0,200,0.38)')
+  hg.addColorStop(1, 'transparent')
+  ctx.fillStyle = hg; ctx.fillRect(0, horizon - 22, W, 44)
+}
+
 // ─── 3D AVATAR STYLES ─────────────────────────────────────────────────────────
 
 const STYLE_3D = {
@@ -544,6 +639,17 @@ const STYLE_3D = {
     headFill:   'rgba(0,80,0,0.12)', headStroke: 'rgba(0,200,50,0.35)',
     faceStroke: 'rgba(0,220,50,0.55)', faceGlow: '#00ff44',
     eyeIris:    'rgba(0,255,60,0.92)', eyeGlow: '#00dd44', handColor: '#00ff88',
+  },
+  synthwave: {
+    bg: '#0d0015', grid: 'rgba(255,0,220,0.20)',
+    boneCol:    d => `rgb(${(255-d*50)|0},${(d*80)|0},255)`,
+    boneGlow:   () => '#ff00ff',
+    boneW:      s => Math.max(2, 4*s),
+    jointCol:   d => `rgb(255,${(60+d*80)|0},255)`,
+    jointGlow:  () => '#ff00ff',
+    headFill:   'rgba(100,0,150,0.12)', headStroke: 'rgba(255,50,255,0.38)',
+    faceStroke: 'rgba(255,80,255,0.58)', faceGlow: '#ff00ff',
+    eyeIris:    'rgba(255,130,255,0.92)', eyeGlow: '#ff55ff', handColor: '#ff88ff',
   },
 }
 
@@ -782,24 +888,41 @@ function draw3DAvatar(results) {
     _mtxTick(W, H)
     ctx.drawImage(MTX.canvas, 0, 0)
     ctx.fillStyle = 'rgba(0,8,0,0.32)'; ctx.fillRect(0, 0, W, H)
+  } else if (sty === 'synthwave') {
+    ctx.fillStyle = S.bg; ctx.fillRect(0, 0, W, H)
+    _synthwaveSky(W, H)
   } else {
     ctx.fillStyle = S.bg; ctx.fillRect(0, 0, W, H)
   }
 
   // ── Perspective grid ──
-  const horizon = H * 0.72
+  const horizon = sty === 'synthwave' ? H * 0.55 : H * 0.72
   ctx.strokeStyle = S.grid; ctx.lineWidth = 1
+  if (sty === 'synthwave') {
+    ctx.shadowColor = '#ff00ff'; ctx.shadowBlur = 5
+  }
   for (let i = 0; i <= 12; i++) {
     const t = i / 12, gy = horizon + (H - horizon) * t, sp = W * 0.55 * t
     ctx.beginPath(); ctx.moveTo(W/2 - sp, gy); ctx.lineTo(W/2 + sp, gy); ctx.stroke()
     const gx = W/2 + (i - 6) / 6 * W * 0.5
     ctx.beginPath(); ctx.moveTo(W/2, horizon); ctx.lineTo(gx, H); ctx.stroke()
   }
+  ctx.shadowBlur = 0
 
-  // ── Robot scan lines ──
+  // ── CRT scan lines (robot + synthwave) ──
   if (sty === 'robot') {
     ctx.fillStyle = 'rgba(0,0,0,0.05)'
     for (let sy = 0; sy < H; sy += 4) ctx.fillRect(0, sy, W, 1)
+  } else if (sty === 'synthwave') {
+    ctx.fillStyle = 'rgba(0,0,0,0.10)'
+    for (let sy = 0; sy < H; sy += 3) ctx.fillRect(0, sy, W, 1)
+    // Animated slow scan line sweep
+    const scanY = (performance.now() * 0.00018 * H) % H
+    const sg = ctx.createLinearGradient(0, scanY - 35, 0, scanY + 35)
+    sg.addColorStop(0, 'transparent')
+    sg.addColorStop(0.5, 'rgba(255,0,255,0.07)')
+    sg.addColorStop(1, 'transparent')
+    ctx.fillStyle = sg; ctx.fillRect(0, scanY - 35, W, 70)
   }
 
   const p    = results.poseLandmarks
@@ -996,6 +1119,7 @@ holistic.setOptions({
 
 holistic.onResults(results => {
   setStatus('Tracking active', '#00ff88')
+  updateFPS()
   if      (mode === 'overlay') drawOverlay(results)
   else if (mode === '2d')      draw2DAvatar(results)
   else if (mode === '3d')      draw3DAvatar(results)

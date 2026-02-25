@@ -369,6 +369,47 @@ kbd {
   display: none !important;
 }
 
+/* ─── FPS counter ────────────────────────────────────────────────────────── */
+#fps-counter {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.28);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.2px;
+  min-width: 42px;
+  text-align: right;
+}
+
+/* ─── Screenshot button ──────────────────────────────────────────────────── */
+.btn-screenshot {
+  border-color: rgba(255, 100, 160, 0.3);
+}
+.btn-screenshot:hover {
+  border-color: rgba(255, 100, 160, 0.7);
+  box-shadow: 0 6px 20px rgba(255, 80, 140, 0.35);
+}
+.btn-screenshot.flash-btn {
+  background: rgba(255, 100, 160, 0.25);
+  border-color: rgba(255, 100, 160, 0.9);
+}
+
+/* ─── Screenshot flash overlay ───────────────────────────────────────────── */
+#screenshot-flash {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: white;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9998;
+  transition: opacity 0.35s ease-out;
+}
+#screenshot-flash.active {
+  opacity: 0.75;
+  transition: opacity 0s;
+}
+
 /* ─── Neon glow helpers (kept for potential extension) ───────────────────── */
 .btn-glow {
   transition: all 0.3s ease;
